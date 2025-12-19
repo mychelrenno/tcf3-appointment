@@ -1,0 +1,71 @@
+# ! > indica que e obrigatorio
+# [] > indica uma lista
+
+type Appointment {
+    id: ID
+    dateTime: String
+    canceled: Boolean
+    address: Address
+    doctor: Doctor
+    patient: Patient
+}
+
+type Address {
+    street: String
+    number: String
+}
+
+type Doctor {
+    name: String
+    crm: String
+}
+
+type Patient {
+    name: String
+    cpf: String
+}
+
+input AppointmentInput {
+    id: ID
+    dateTime: String!
+    canceled: Boolean!
+    address: AddressInput!
+    doctor: DoctorInput!
+    patient: PatientInput!
+}
+
+input AddressInput {
+    street: String!
+    number: String!
+}
+
+input DoctorInput {
+    name: String!
+    crm: String!
+}
+
+input PatientInput {
+    name: String!
+    cpf: String!
+    email: String!
+}
+
+input FilterInput {
+    startDateTime: String
+    endDateTime: String
+    canceled: Boolean
+    doctorCrm: String
+    patientCpf: String
+}
+
+type Query {
+    findAllAppointment: [Appointment]
+    findAppointmentByFilters(filter: FilterInput): [Appointment]
+    findFutureAppointmentByPatientCpf(cpf: String!): [Appointment]
+}
+
+type Mutation {
+    createAppointment(dto: AppointmentInput!): Appointment
+    updateAppointment(dto: AppointmentInput!): Appointment
+    cancelAppointment(id: String!): Appointment
+}

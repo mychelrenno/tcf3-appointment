@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  kafka:
+    image: apache/kafka:4.1.1
+    ports:
+      - "9092:9092"
+    volumes:
+      - volume-kafka:/var/lib/kafka/data
+    networks:
+      - kafka-net
+    environment:
+      # KRaft
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      # Listeners
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      # Single node (dev)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      # Dev only
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "/opt/kafka/bin/kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 10s
+      retries: 5
+
+  db:
+    image: mongo:8.2.2-noble
+    ports:
+      - "27018:27017"
+    volumes:
+      - volume-mongo:/data/db
+    networks:
+      - kafka-net
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE}
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  api:
+    image: tcf3-appointment-api:1.0
+    build:
+      # Pasta onde está o Dockerfile
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    networks:
+      - kafka-net
+    depends_on:
+      db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      SPRING_MONGODB_HOST: db
+      SPRING_MONGODB_PORT: 27017
+      SPRING_MONGODB_USERNAME: ${MONGODB_USERNAME}
+      SPRING_MONGODB_PASSWORD: ${MONGODB_PASSWORD}
+      SPRING_MONGODB_DATABASE: tcf3-appointment-db
+      SPRING_SECRET_KEY: ${JWT_SECRET_KEY}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+volumes:
+  volume-mongo:
+  volume-kafka:
+
+networks:
+  kafka-net:
+    external: true
