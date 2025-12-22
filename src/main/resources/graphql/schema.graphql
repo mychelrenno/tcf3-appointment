@@ -23,6 +23,7 @@ type Doctor {
 type Patient {
     name: String
     cpf: String
+    email: String
 }
 
 input AppointmentInput {

@@ -79,6 +79,14 @@ public class AppointmentController {
     }
 
     @QueryMapping
+    @PreAuthorize(
+            "hasAnyAuthority(" +
+                    "T(com.devrenno.appointment.security.UserRole).ROLE_DOCTOR.name(), " +
+                    "T(com.devrenno.appointment.security.UserRole).ROLE_NURSE.name(), " +
+                    "T(com.devrenno.appointment.security.UserRole).ROLE_USER.name(), " +
+                    "T(com.devrenno.appointment.security.UserRole).ROLE_PATIENT.name()" +
+                    ")"
+    )
     public List<AppointmentDto> findFutureAppointmentByPatientCpf(@Argument String cpf) {
         var dtos = appointmentService.findFutureAppointmentByPatientCpf(cpf);
         return dtos;

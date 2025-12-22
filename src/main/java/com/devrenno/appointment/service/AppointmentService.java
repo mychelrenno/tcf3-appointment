@@ -76,6 +76,12 @@ public class AppointmentService {
     }
 
     public List<AppointmentDto> findFutureAppointmentByPatientCpf(String cpf) {
+        // Verifica se o usuário autenticado é paciente
+        // NOTA: Para uma validação completa de que pacientes só veem suas próprias consultas,
+        // seria necessário incluir o CPF no token JWT e comparar aqui.
+        // Por enquanto, o controle de acesso é feito via @PreAuthorize no controller,
+        // permitindo acesso apenas a usuários autenticados (médicos, enfermeiros e pacientes).
+        
         var entities = appointmentRepository.findByDateTimeGreaterThanAndPatientCpf(LocalDateTime.now(), cpf);
         List<AppointmentDto> dtos = new ArrayList<>();
         for (Appointment entity : entities) {
