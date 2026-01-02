@@ -21,6 +21,7 @@ public class JwtService {
     private String secretKey;
 
     private static final String ROLE = "role";
+    private static final String CPF = "cpf";
 
     private SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
@@ -46,6 +47,10 @@ public class JwtService {
 
     public String extractEmail(String token) {
         return extractClaims(token).getSubject();
+    }
+
+    public String extractCpf(String token) {
+        return extractClaims(token).get(CPF, String.class);
     }
 
     public boolean isExpired(String token) {

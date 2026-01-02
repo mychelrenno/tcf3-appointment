@@ -53,12 +53,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String email = jwtService.extractEmail(token);
             String role = jwtService.extractRole(token);
             
-            logger.debug("Token válido para usuário: {} com role: {}", email, role);
+            // Normaliza o role para corresponder ao enum UserRole
+            String normalizedRole = normalizeRole(role);
+            
+            logger.debug("Token válido para usuário: {} com role: {} (normalizado: {})", email, role, normalizedRole);
             
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     email,
                     null,
-                    List.of(new SimpleGrantedAuthority(role))
+                    List.of(new SimpleGrantedAuthority(normalizedRole))
             );
 
             // Registra o usuario como autenticado
@@ -70,5 +73,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             logger.error("Erro ao processar token: {}", e.getMessage(), e);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
+    }
+
+    /**
+     * Normaliza o role do token para corresponder ao enum UserRole
+     * Converte ROLE_DOCTOR -> ROLE_DOCTOR, ROLE_NURSE -> ROLE_NURSE, ROLE_PATIENT -> ROLE_PATIENT
+     */
+    private String normalizeRole(String role) {
+        if (role == null) {
+            return "ROLE_PATIENT"; // Default
+        }
+        
+        // Remove prefixo ROLE_ se já existir e adiciona novamente para garantir formato correto
+        String roleUpper = role.toUpperCase().trim();
+        if (!roleUpper.startsWith("ROLE_")) {
+            roleUpper = "ROLE_" + roleUpper;
+        }
+        
+        // Mapeia roles do user service para roles do appointment service
+        if (roleUpper.contains("DOCTOR")) {
+            return "ROLE_DOCTOR";
+        } else if (roleUpper.contains("NURSE")) {
+            return "ROLE_NURSE";
+        } else if (roleUpper.contains("PATIENT")) {
+            return "ROLE_PATIENT";
+        }
+        
+        return roleUpper;
     }
 }
