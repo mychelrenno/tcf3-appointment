@@ -6,16 +6,18 @@ public class AgendamentoMessage {
     private String dataAtendimento; // Formato ddmmaaaa
     private String horaAtendimento; // Formato hh:mm
     private String nomeResponsavel;
+    private Boolean canceled;
 
     public AgendamentoMessage() {
     }
 
-    public AgendamentoMessage(String emailPaciente, String nomePaciente, String dataAtendimento, String horaAtendimento, String nomeResponsavel) {
+    public AgendamentoMessage(String emailPaciente, String nomePaciente, String dataAtendimento, String horaAtendimento, String nomeResponsavel, Boolean canceled) {
         this.emailPaciente = emailPaciente;
         this.nomePaciente = nomePaciente;
         this.dataAtendimento = dataAtendimento;
         this.horaAtendimento = horaAtendimento;
         this.nomeResponsavel = nomeResponsavel;
+        this.canceled = canceled;
     }
 
     public String getEmailPaciente() {
@@ -57,5 +59,9 @@ public class AgendamentoMessage {
     public void setNomeResponsavel(String nomeResponsavel) {
         this.nomeResponsavel = nomeResponsavel;
     }
+
+    public Boolean getCanceled() { return canceled;}
+
+    public void setCanceled(Boolean canceled) { this.canceled = canceled; }
 }
 

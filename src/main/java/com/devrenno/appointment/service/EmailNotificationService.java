@@ -41,6 +41,7 @@ public class EmailNotificationService {
         message.setDataAtendimento(dataAtendimento);
         message.setHoraAtendimento(horaAtendimento);
         message.setNomeResponsavel(dto.getDoctor().getName());
+        message.setCanceled(dto.getCanceled());
         
         return message;
     }
